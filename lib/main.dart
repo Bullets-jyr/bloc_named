@@ -8,8 +8,15 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  final CounterCubit _counterCubit = CounterCubit();
 
   @override
   Widget build(BuildContext context) {
@@ -19,11 +26,23 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: BlocProvider<CounterCubit>(
-        create: (context) => CounterCubit(),
-        child: const MyHomePage(),
-      ),
+      routes: {
+        '/': (context) => BlocProvider.value(
+          value: _counterCubit,
+          child: MyHomePage(),
+        ),
+        '/counter': (context) => BlocProvider.value(
+          value: _counterCubit,
+          child: ShowMeCounter(),
+        ),
+      },
     );
+  }
+
+  @override
+  void dispose() {
+    _counterCubit.close();
+    super.dispose();
   }
 }
 
@@ -39,14 +58,9 @@ class MyHomePage extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () {
-                Navigator.push(
+                Navigator.pushNamed(
                   context,
-                  MaterialPageRoute(builder: (_) {
-                    return BlocProvider.value(
-                      value: context.read<CounterCubit>(),
-                      child: ShowMeCounter(),
-                    );
-                  }),
+                  '/counter',
                 );
               },
               child: Text(
